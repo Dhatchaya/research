@@ -124,7 +124,7 @@
           "chirpEndIdx": 0,
           "chirpStartIdx": 0,
           "numLoops": 128,
-          "numFrames": 256,
+          "numFrames": 512,
           "framePeriodicity_msec": 13,
           "triggerSelect": 1,
           "numDummyChirpsAtEnd": 0,
