@@ -1,9 +1,6 @@
 clc;
 close all;
 
-% processing mmWave radar
-% Kaiyan 
-% 2022-10-17
 
 % bin data path
 binDataPath = '.\Data\';  
@@ -35,8 +32,8 @@ fileCount = length(matDataDir);
 
 sigFre = [100,300];
 
-% target location 0.34
-trueLoc =  2.1978;
+% target location
+trueLoc =  0.64;
 
 
 for fileId = 1: 1 : fileCount
@@ -81,7 +78,7 @@ for fileId = 1: 1 : fileCount
 
 
     % vibration signal
-    vibSig = getVibSig(signal,angle,sigFre);
+    vibSig = getVibSig(signal,angle,sigFre,fileName);
 
 
     end

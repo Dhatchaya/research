@@ -229,14 +229,14 @@ function [binarylength , dataStart] = getLength(dataLengthSamples, pulsewidth)
     zerosSample = zeros(1, pulsewidth);
 
     for i = 1:8
-        disp(['i',num2str(i)]);
+        % disp(['i',num2str(i)]);
         % Determine the end index dynamically
         endIdx = min(startIdx + chunkSize - 1, length(dataLengthSamples));
-        disp(['startIdx', num2str(startIdx +138),'end idx', num2str(endIdx+138)]);
+        % disp(['startIdx', num2str(startIdx +138),'end idx', num2str(endIdx+138)]);
         
         chunk = dataLengthSamples(startIdx:endIdx);
 
-        disp(chunk);
+        % disp(chunk);
         if length(chunk) < pulsewidth
             break; % Stop if chunk is too small for matching
         end
@@ -257,8 +257,8 @@ function [binarylength , dataStart] = getLength(dataLengthSamples, pulsewidth)
                 maxMatchScore = maxMatch;
                 bestMatchIdx = startIdx + j - 1; % Adjust for global indexing
                 bits(i) = matchType - 1 ; % 1 if matched ones, 0 if matched zeros
-                disp(['matchType',num2str(matchType)]);
-                disp(['bits',num2str(bits)]);
+                % disp(['matchType',num2str(matchType)]);
+                % disp(['bits',num2str(bits)]);
             end
         end
 
@@ -321,10 +321,10 @@ function [extractedBinaryArray] = extractBinaryFromSignal(binarySignal, startIdx
     for i = 1:binaryNumber
         % Determine the end index dynamically
         endIdx = min(startIdx + chunkSize - 1, length(binarySignal));
-        disp(['StartIdx: ', num2str(startIdx), ' EndIdx: ', num2str(endIdx)]);
+        % disp(['StartIdx: ', num2str(startIdx), ' EndIdx: ', num2str(endIdx)]);
         
         chunk = binarySignal(startIdx:endIdx);
-        disp(chunk);
+        % disp(chunk);
         if length(chunk) < pulsewidth
             break; % Stop if chunk is too small for matching
         end
@@ -344,7 +344,7 @@ function [extractedBinaryArray] = extractBinaryFromSignal(binarySignal, startIdx
             if maxMatch > maxMatchScore
                 maxMatchScore = maxMatch;
                 bestMatchIdx = startIdx + j - 1;
-                disp(bestMatchIdx);
+                % disp(bestMatchIdx);
                 extractedBinary(i) = matchType - 1 ;
                
             end
@@ -459,8 +459,8 @@ function correctedData = correctHamming74(codeword)
          0 1 1 0 0 1 1; 
          0 0 0 1 1 1 1];
     %disp(H')
-      disp('code')
-     disp(codeword)
+    %   disp('code')
+    %  disp(codeword)
    
     % Compute syndrome using matrix multiplication (codeword * H^T)
     syndrome = mod(codeword * H', 2);  % Corrected calculation
@@ -473,8 +473,8 @@ function correctedData = correctHamming74(codeword)
         fprintf('Error detected at position %d. Correcting...\n', errorIndex);
         codeword(errorIndex) = mod(codeword(errorIndex) + 1, 2); % Flip the bit
     end
-    disp('correctedData')
-    disp(codeword)
+    % disp('correctedData')
+    % disp(codeword)
     % Extract the original 4-bit data from corrected codeword
     correctedData = [codeword(3), codeword(5), codeword(6), codeword(7)];
 end

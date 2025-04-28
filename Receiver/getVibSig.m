@@ -1,6 +1,6 @@
-function  [vibSig]=getVibSig(signal,ang,sigFre)
+function  [vibSig]=getVibSig(signal,ang,sigFre,fileName)
 
-fontsize = 16;
+fontsize = 18;
 fig_width = 15;
 fig_height = 12;
 linewidth = 2.5;
@@ -31,26 +31,22 @@ signal_beam = fillmissing(signal_beam,'linear');
 
 
 
-freBand = abs(fft(signal_beam));
+windowed_signal = signal_beam .* blackman(Nsample);
+freBand = abs(fft(windowed_signal));
 %freBand(3585:-256:0,:) = freBand(3585+1:-256:0,:) ;
 
 
 figure;
-set(gcf,'unit', 'centimeters', 'position', [15,10,fig_width,fig_height],'DefaultTextFontName','times new roman','Color',[1 1 1]);
- %plot(fft_x,abs(fft(signal_beam)));
 plot(fft_x,freBand);
-xlim([100,300]);
-set(gca, 'fontsize', fontsize);
-set(gca,'YDir','normal');
-xlabel('Frequency(Hz)','FontSize',fontsize); ylabel('|FFT|','FontSize',fontsize);
+xlim([0,300]);
+ylim([0, 5e6]);
+xlabel('Frequency(Hz)','FontSize',fontsize); 
+ylabel('Magnitude of FFT', 'FontSize', fontsize);
 title('FFT on Phase ','FontSize',fontsize);
 
 
 vibSig = getPhase(signal_beam,filter_fft);
-max_amplitude = max(vibSig);
-min_amplitude = min(vibSig);
-peak_to_peak_amplitude = max_amplitude - min_amplitude;
-fprintf("Amplitude %d",peak_to_peak_amplitude);
+
 figure;
 set(gcf,'unit', 'centimeters', 'position', [15,10,fig_width,fig_height],'DefaultTextFontName','times new roman','Color',[1 1 1]);
 plot(vibSig);
@@ -61,49 +57,26 @@ set(gca,'YDir','normal');
 xlabel('#Sample','FontSize',fontsize); ylabel('Phase(rad)','FontSize',fontsize);
 title('Phase','FontSize',fontsize);
 
+t = (0:length(vibSig)-1) * 1000/fs; % Time vector in milliseconds
 
-% Set up parameters
-time_interval_ms = 100;
-sample_interval = (time_interval_ms / 1000) * fs; % 2000 samples
-start_sample = 2500; % Starting sample index
-end_sample = 36000;
-
-% Calculate time in seconds
-start_time = start_sample / fs; % Starting time in seconds
-end_time = end_sample / fs;     % Ending time in seconds
-time_interval_sec = sample_interval / fs; % Interval in seconds
-
-
-total_samples = length(vibSig);
-time_axis = (0:total_samples - 1) / fs; % Convert samples to seconds
-
-% Set up the phase plot
 figure;
-set(gcf, 'unit', 'centimeters', 'position', [15, 10, fig_width, fig_height], ...
-    'DefaultTextFontName', 'times new roman', 'Color', [1 1 1]);
-plot(time_axis, vibSig); % Plot using the full time axis
-ylim([-0.1, 0.1]);
-xlim([start_sample / fs, end_sample / fs]); % Specify x-axis range in seconds
-
-% Set x-axis ticks to 200 ms intervals in seconds
-xticks(start_sample / fs:time_interval_sec:end_sample / fs);
-
-% Set other plot properties
+set(gcf,'unit', 'centimeters', 'position', [15,10,fig_width,fig_height],...
+    'DefaultTextFontName','times new roman','Color',[1 1 1]);
+plot(t, vibSig);
+ylim([-0.2,0.2]);
+xlim([100*1000/fs, (30000+100)*1000/fs]); % Convert sample limits to ms
 set(gca, 'fontsize', fontsize);
-set(gca, 'YDir', 'normal');
-xlabel('Time (s)', 'FontSize', fontsize);
-ylabel('Phase (rad)', 'FontSize', fontsize);
-title('Phase', 'FontSize', fontsize);
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Add grid
+set(gca,'YDir','normal');
+xlabel('Time (ms)','FontSize',fontsize);
+ylabel('Phase (rad)','FontSize',fontsize);
+title('Phase','FontSize',fontsize);
 grid on;
+
 
 windows = 128*3;
 
 f_len = windows/2 + 1;
-f = linspace(0, 500, f_len);
+f = linspace(100, 300, f_len);
 noverlap = windows/2;
 
 [s,f,t,p] = spectrogram(vibSig, windows,noverlap,f,fs);
@@ -113,43 +86,35 @@ s = (abs(s));
 % Normalizing amplitude across the frequency axis
 amplitude_sum = sum(s, 1); % Sum over frequency (rows of s)
 normalized_amplitude = amplitude_sum / max(amplitude_sum); % Normalize to [0, 1]
+smoothed_amplitude = movmean(normalized_amplitude, 4);
 
-startId = find(t >= 0.3, 1, 'first'); % Closest index to 0.2 seconds
-endId = find(t <= 3.2, 1, 'last');
-disp("startid "+startId+"endid"+endId);
-normalized_amplitude(1:startId) = 0;      % Zero out before startIdx
-normalized_amplitude(endId+1:end) = 0;   % Zero out after endIdx
+
 
 % Plot the normalized amplitude
 figure;
-plot(normalized_amplitude, 'LineWidth', 1.5);
-xlabel('Time (s)');
-ylabel('Normalized Amplitude');
-title('Normalized Amplitude vs Time');
+plot(t,smoothed_amplitude, 'LineWidth', 1);
+xlabel('Time (s)','FontSize',fontsize);
+ylabel('Normalized Amplitude','FontSize',fontsize);
+title('Normalized Amplitude vs Time','FontSize',fontsize);
 grid on;
 
-% Compute the power for each time step
-power_over_time = sum(abs(s).^2, 1); % Sum power across frequencies (rows of s)
+amplitudeThreshold =  max(smoothed_amplitude)*0.5;
+binarySignal = abs(smoothed_amplitude) > amplitudeThreshold;
 
-% Normalize the power over time
-normalized_power_over_time = power_over_time / max(power_over_time);
-startId = find(t >= 0.3, 1, 'first'); % Closest index to 0.2 seconds
-endId = find(t <= 3.2, 1, 'last');
-disp("startid "+startId+"endid"+endId);
-normalized_power_over_time(1:startId) = 0;      % Zero out before startIdx
-normalized_power_over_time(endId+1:end) = 0;   % Zero out after endIdx
-disp("max amplitude is this "+max(normalized_power_over_time)*0.8);
-%time = (0:length(normalized_power_over_time)-1) / fs;
-% Plot the normalized power over time
+% Plot Binary signal graph
 figure;
-plot(t,normalized_power_over_time, 'LineWidth', 1.5);
-xlabel('Time (s)');
-ylabel('Normalized Power');
-title('Power vs Time');
+plot(t, binarySignal, 'b.-');
+xlabel('Time (s)','FontSize',fontsize);
+ylabel('Binary Value','FontSize',fontsize);
+title('Binary Signal','FontSize',fontsize);
+ylim([-0.2 1.2]); % Keep the plot range between 0 and 1
 grid on;
 
-detectAmplitudePattern(normalized_amplitude, fs);
+%call on off keying function to decode the data using OOK
+onoffkeying(binarySignal,amplitudeThreshold,100,fileName);
 
+%uncomment this to decode amplitude modulation
+% analyzeAmplitudePatternNew(smoothed_amplitude,fileName);
 
 
 figure;
@@ -161,8 +126,6 @@ xlabel('Time(s)','FontSize',fontsize); ylabel('Freqency','FontSize',fontsize);
 title('Spectrum','FontSize',fontsize);
 % imagesc(t, f, s);xlabel('Samples'); ylabel('Freqency');
 % colorbar;
-
-
 
 end
 
