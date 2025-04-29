@@ -1,9 +1,16 @@
-# research
-Final year research material
+**Research Project**
+This repository contains the source code for both the sender and receiver setups used in the associated research project.
 
+**Instructions**
+**Receiver Setup:**
 
-**Experiments**
-Link for experiments documentation: https://docs.google.com/document/d/1gjgXbsu7HOdhEeeRg9fItoOmLnURZicqpBCI_5x7OP4/edit?usp=sharing
+Please download the dataset file named [An.bin](https://drive.google.com/file/d/1NOGwxa2Ro3wGJ_p8tDYrgCO2fEvZK8Ul/view?usp=sharing).
+
+Place the An.bin file inside the Receiver/Data/ directory before running the receiver code.
+
+**Sender Setup:**
+
+Use the sender code on a mobile device that supports vibration amplitude control for proper functioning.
 
 
 
